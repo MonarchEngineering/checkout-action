@@ -1,0 +1,34 @@
+name: Checkout
+description: Git checkout & double-check triggering conditions
+
+runs:
+  using: composite
+  steps:
+    - name: Check pull_request_target other than Dependabot
+      if: github.event_name == 'pull_request_target' && github.actor != 'dependabot[bot]'
+      shell: bash
+      run: |
+        echo "This workflow was triggered by a pull_request_target. pull_request_target is only for dependabot."
+        echo "Either you mis-configured the 'if' statement for this workflow or this PR was made by an unauthorized fork."
+        exit 1
+
+    - name: Check pull_request for Dependabot
+      if: github.event_name != 'pull_request_target' && github.actor == 'dependabot[bot]'
+      shell: bash
+      run: |
+        echo "This workflow was triggered by Dependabot and won't run with permission to access secrets"
+        exit 1
+
+    - name: Print triggering action & actor
+      shell: bash
+      run: echo "Action triggered by event ${{ github.event_name }} and actor ${{ github.actor }}"
+
+    - name: Checkout
+      if: ${{ github.event_name != 'pull_request_target' }}
+      uses: actions/checkout@v2
+
+    - name: Checkout (Dependabot)
+      if: ${{ github.event_name == 'pull_request_target' }}
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
