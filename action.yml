@@ -19,7 +19,7 @@ runs:
         exit 1
 
     - name: Check pull_request for Dependabot
-      if: github.event_name != 'pull_request_target' && github.actor == 'dependabot[bot]'
+      if: github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
       shell: bash
       run: |
         echo "This workflow was triggered by Dependabot and won't run with permission to access secrets"
