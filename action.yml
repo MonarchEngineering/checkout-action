@@ -4,6 +4,12 @@ description: Git checkout & double-check triggering conditions
 runs:
   using: composite
   steps:
+    - name: Debug triggering event
+      shell: bash
+      run: echo "Action triggered by event ${{ github.event_name }} and actor ${{ github.actor }}"
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+
     - name: Check pull_request_target other than Dependabot
       if: github.event_name == 'pull_request_target' && github.actor != 'dependabot[bot]'
       shell: bash
@@ -18,10 +24,6 @@ runs:
       run: |
         echo "This workflow was triggered by Dependabot and won't run with permission to access secrets"
         exit 1
-
-    - name: Print triggering action & actor
-      shell: bash
-      run: echo "Action triggered by event ${{ github.event_name }} and actor ${{ github.actor }}"
 
     - name: Checkout
       if: ${{ github.event_name != 'pull_request_target' }}
